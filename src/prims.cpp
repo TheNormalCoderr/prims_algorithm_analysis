@@ -209,7 +209,7 @@ int main() {
     const int numTests = 4;
 
     for (int testId = 1; testId <= numTests; ++testId) {
-        string outPath = "prims_experiment_test" + to_string(testId) + ".txt";
+        string outPath = "data/prims_experiment_test" + to_string(testId) + ".txt";
         ofstream out(outPath);
         if (!out.is_open()) {
             cerr << "Failed to open output file: " << outPath << '\n';

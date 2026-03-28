@@ -47,8 +47,8 @@ def load_data(path):
 
 
 def plot_test(test_id):
-    input_path = f"prims_experiment_test{test_id}.txt"
-    output_path = f"prims_experiment_test{test_id}.png"
+    input_path = f"data/prims_experiment_test{test_id}.txt"
+    output_path = f"graphs/prims_experiment_test{test_id}.png"
 
     (dense_n, dense_matrix_t, dense_heap_t,
      sparse_n, sparse_matrix_t, sparse_heap_t) = load_data(input_path)
@@ -82,7 +82,7 @@ def plot_test(test_id):
 
 if __name__ == '__main__':
     for test in range(1, 5):
-        if os.path.exists(f"prims_experiment_test{test}.txt"):
+        if os.path.exists(f"data/prims_experiment_test{test}.txt"):
             plot_test(test)
         else:
             print(f"Missing input for test {test}")
