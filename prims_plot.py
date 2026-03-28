@@ -31,7 +31,7 @@ def plot_test(test_id):
         benchmark_t = []
 
     plt.figure(figsize=(10, 6))
-    plt.plot(n, matrix_t, linewidth=1.8, label="Prim's Matrix O(V^2)")
+    plt.plot(n, matrix_t, linewidth=1.8, label="Prim's Matrix O(n^2)")
     plt.plot(n, benchmark_t, linestyle='--', linewidth=2.0, color='red', label='Benchmark ~ n^2')
     plt.xlabel('Input Size (number of vertices, n)')
     plt.ylabel('Average Time (milliseconds)')

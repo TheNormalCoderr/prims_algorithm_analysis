@@ -17,7 +17,7 @@ struct GraphData {
     vector<vector<int>> matrix;
 };
 
-GraphData generateRandomDenseGraph(int n, mt19937 &rng) {
+GraphData generateRandomConnectedGraph(int n, mt19937 &rng) {
     uniform_int_distribution<int> weightDist(1, 1000);
     GraphData g;
     g.matrix.assign(n, vector<int>(n, INF));
@@ -26,16 +26,36 @@ GraphData generateRandomDenseGraph(int n, mt19937 &rng) {
         return g;
     }
 
-    for (int i = 0; i < n; ++i) {
-        g.matrix[i][i] = 0;
+    const int maxEdges = n * (n - 1) / 2;
+    const int minEdges = n - 1;
+    uniform_real_distribution<double> pDist(0.1, 0.6);
+    double p = pDist(rng);
+    int targetTotal = static_cast<int>(p * maxEdges);
+    targetTotal = min(maxEdges, max(minEdges, targetTotal));
+
+    for (int i = 0; i < n; ++i) g.matrix[i][i] = 0;
+
+    int edgeCount = 0;
+
+    // Build a random spanning tree first so the graph is connected.
+    for (int v = 1; v < n; ++v) {
+        uniform_int_distribution<int> parentDist(0, v - 1);
+        int u = parentDist(rng);
+        int w = weightDist(rng);
+        g.matrix[u][v] = w;
+        g.matrix[v][u] = w;
+        edgeCount++;
     }
 
-    for (int i = 0; i < n; ++i) {
-        for (int j = i + 1; j < n; ++j) {
-            int w = weightDist(rng);
-            g.matrix[i][j] = w;
-            g.matrix[j][i] = w;
-        }
+    uniform_int_distribution<int> vertexDist(0, n - 1);
+    while (edgeCount < targetTotal) {
+        int u = vertexDist(rng);
+        int v = vertexDist(rng);
+        if (u == v || g.matrix[u][v] != INF) continue;
+        int w = weightDist(rng);
+        g.matrix[u][v] = w;
+        g.matrix[v][u] = w;
+        edgeCount++;
     }
 
     return g;
@@ -125,7 +145,8 @@ int main() {
         out << "# Prim's Algorithm Experiment\n";
         out << "# Test: " << testId << '\n';
         out << "# Seed: " << seed << '\n';
-        out << "# Dense graph: complete graph with random weights\n";
+        out << "# Connected undirected random graph (matrix)\n";
+        out << "# Graph density target: random p in [0.1, 0.6]\n";
         out << "# Columns: n matrix_avg_ms\n";
         out << "n matrix_avg_ms\n";
 
@@ -137,7 +158,7 @@ int main() {
             double matrixSum = 0.0;
 
             for (int t = 0; t < trialsPerSize; ++t) {
-                GraphData g = generateRandomDenseGraph(n, rng);
+                GraphData g = generateRandomConnectedGraph(n, rng);
                 matrixSum += timeMsMatrix(g);
             }
 
