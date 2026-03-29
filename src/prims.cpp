@@ -5,6 +5,7 @@
 #include <iostream>
 #include <limits>
 #include <queue>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -20,10 +21,12 @@ struct GraphData {
 };
 
 // ============================================================
-// GRAPH GENERATION (DETERMINISTIC)
+// GRAPH GENERATION (RANDOM USING MT19937)
 // ============================================================
+static mt19937 rng(random_device{}());
+static uniform_int_distribution<int> weightDist(1, 1000);
 
-// Dense graph: complete graph on n vertices.
+// Dense graph: complete graph on n vertices with random weights.
 GraphData generateDenseConnectedGraph(int n) {
     GraphData g;
     const size_t sz = static_cast<size_t>(n);
@@ -36,12 +39,14 @@ GraphData generateDenseConnectedGraph(int n) {
 
     for (size_t i = 0; i < sz; ++i) g.matrix[i][i] = 0;
 
-    // Deterministic dense graph: complete graph.
+    // Random dense graph: complete graph.
     for (size_t u = 0; u < sz; ++u) {
         for (size_t v = u + 1; v < sz; ++v) {
-            int w = static_cast<int>(((u + 1U) * (v + 1U)) % 1000U) + 1;
+            int w = weightDist(rng);
+            // generating matrix 
             g.matrix[u][v] = w;
             g.matrix[v][u] = w;
+            // generating list 
             g.adj[u].push_back({static_cast<int>(v), w});
             g.adj[v].push_back({static_cast<int>(u), w});
         }
@@ -50,7 +55,7 @@ GraphData generateDenseConnectedGraph(int n) {
     return g;
 }
 
-// Sparse graph: path backbone + periodic skip edges.
+// Sparse graph: path backbone + periodic skip edges, with random weights.
 GraphData generateSparseConnectedGraph(int n) {
     GraphData g;
     const size_t sz = static_cast<size_t>(n);
@@ -63,20 +68,20 @@ GraphData generateSparseConnectedGraph(int n) {
 
     for (size_t i = 0; i < sz; ++i) g.matrix[i][i] = 0;
 
-    // Deterministic sparse graph: path backbone for connectivity.
+    // Random sparse graph: path backbone for connectivity.
     for (size_t v = 1; v < sz; ++v) {
         size_t u = v - 1;
-        int w = static_cast<int>(v % 1000U) + 1;
+        int w = weightDist(rng);
         g.matrix[u][v] = w;
         g.matrix[v][u] = w;
         g.adj[u].push_back({static_cast<int>(v), w});
         g.adj[v].push_back({static_cast<int>(u), w});
     }
 
-    // Add a few deterministic extra edges, keeping graph sparse.
+    // Add a few random extra edges, keeping graph sparse.
     for (size_t u = 0; u + 2 < sz; u += 10) {
         size_t v = u + 2;
-        int w = static_cast<int>((u + v) % 1000U) + 1;
+        int w = weightDist(rng);
         g.matrix[u][v] = w;
         g.matrix[v][u] = w;
         g.adj[u].push_back({static_cast<int>(v), w});
@@ -206,10 +211,10 @@ int main() {
     const int maxN = 2000;
     const int step = 100;
     const int trialsPerSize = 9;
-    const int numTests = 4;
+    const int numTests = 4 ;
 
     for (int testId = 1; testId <= numTests; ++testId) {
-        string outPath = "data/prims_experiment_test" + to_string(testId) + ".txt";
+        string outPath = "/Users/amiteshwarsingh/Documents/ADA/prims/data/prims_experiment_test" + to_string(testId) + ".txt";
         ofstream out(outPath);
         if (!out.is_open()) {
             cerr << "Failed to open output file: " << outPath << '\n';
@@ -218,7 +223,7 @@ int main() {
 
         out << "# Prim's Algorithm Experiment (Matrix vs Heap)\n";
         out << "# Test: " << testId << '\n';
-        out << "# Deterministic connected undirected weighted graphs\n";
+        out << "# Random connected undirected weighted graphs (mt19937)\n";
         out << "# Dense: complete graph, Sparse: path + periodic skip edges\n";
         out << "# Each section format: n matrix_avg_ms heap_avg_ms\n";
 

@@ -1,7 +1,13 @@
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import os
+from pathlib import Path
+
+try:
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+except ModuleNotFoundError:
+    print("Missing dependency: matplotlib")
+    print("Install it with: python3 -m pip install matplotlib")
+    raise SystemExit(1)
 
 
 def load_data(path):
@@ -46,9 +52,13 @@ def load_data(path):
             sparse_n, sparse_matrix_t, sparse_heap_t)
 
 
+DATA_DIR = Path("/Users/amiteshwarsingh/Documents/ADA/prims/data")
+GRAPH_DIR = Path("/Users/amiteshwarsingh/Documents/ADA/prims/graphs")
+
+
 def plot_test(test_id):
-    input_path = f"data/prims_experiment_test{test_id}.txt"
-    output_path = f"graphs/prims_experiment_test{test_id}.png"
+    input_path = DATA_DIR / f"prims_experiment_test{test_id}.txt"
+    output_path = GRAPH_DIR / f"prims_experiment_test{test_id}.png"
 
     (dense_n, dense_matrix_t, dense_heap_t,
      sparse_n, sparse_matrix_t, sparse_heap_t) = load_data(input_path)
@@ -56,18 +66,18 @@ def plot_test(test_id):
     plt.figure(figsize=(12, 6))
 
     plt.subplot(1, 2, 1)
-    plt.plot(dense_n, dense_matrix_t, linewidth=1.8, label="Matrix O(n^2)")
-    plt.plot(dense_n, dense_heap_t, linewidth=1.8, label="Heap O(E log n)")
-    plt.xlabel('n')
+    plt.plot(dense_n, dense_matrix_t, linewidth=1.8, label="Adjacency Matrix O(n^2)")
+    plt.plot(dense_n, dense_heap_t, linewidth=1.8, label="Adjacency list + Heap O((n + E) log n)")
+    plt.xlabel('n (number of vertices)')
     plt.ylabel('Average Time (ms)')
     plt.title('Dense Graph')
     plt.grid(True, linestyle='--', alpha=0.5)
     plt.legend()
 
     plt.subplot(1, 2, 2)
-    plt.plot(sparse_n, sparse_matrix_t, linewidth=1.8, label="Matrix O(n^2)")
-    plt.plot(sparse_n, sparse_heap_t, linewidth=1.8, label="Heap O(E log n)")
-    plt.xlabel('n')
+    plt.plot(sparse_n, sparse_matrix_t, linewidth=1.8, label="Adjacency Matrix O(n^2)")
+    plt.plot(sparse_n, sparse_heap_t, linewidth=1.8, label="Adjacency list + Heap O((n + E) log n)")
+    plt.xlabel('n (number of vertices)')
     plt.ylabel('Average Time (ms)')
     plt.title('Sparse Graph')
     plt.grid(True, linestyle='--', alpha=0.5)
@@ -75,6 +85,7 @@ def plot_test(test_id):
 
     plt.suptitle(f"Prim's Algorithm Analysis (Test {test_id})")
     plt.tight_layout()
+    GRAPH_DIR.mkdir(parents=True, exist_ok=True)
     plt.savefig(output_path, dpi=140)
     plt.close()
     print(f"Saved: {output_path}")
@@ -82,7 +93,7 @@ def plot_test(test_id):
 
 if __name__ == '__main__':
     for test in range(1, 5):
-        if os.path.exists(f"data/prims_experiment_test{test}.txt"):
+        if (DATA_DIR / f"prims_experiment_test{test}.txt").exists():
             plot_test(test)
         else:
             print(f"Missing input for test {test}")
